@@ -1,0 +1,31 @@
+{
+    "name": "apatis/prima",
+    "description": "",
+    "type": "project",
+    "require": {
+        "php": "^7.0",
+        "apatis/callback_resolver": "~1.0",
+        "apatis/config": "~1.0",
+        "apatis/container": "~1.0",
+        "apatis/http-message": "~1.0",
+        "apatis/http-cookie": "~1.0",
+        "apatis/middleware": "~1.0",
+        "apatis/route": "~1.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "3.*"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "pentagonal",
+            "email": "org@pentagonal.org",
+            "role": "developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Apatis\\Prima\\" : "src/"
+        }
+    }
+}
