@@ -1,12 +1,13 @@
 {
     "name": "apatis/prima",
-    "description": "",
+    "description": "The Slowest Performance Micro Framework",
     "type": "project",
     "require": {
         "php": "^7.0",
         "apatis/callback_resolver": "~1.0",
         "apatis/config": "~1.0",
         "apatis/container": "~1.0",
+        "apatis/handler-response": "~1.0",
         "apatis/http-message": "~1.0",
         "apatis/http-cookie": "~1.0",
         "apatis/middleware": "~1.0",

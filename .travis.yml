@@ -1,0 +1,25 @@
+# Grant
+sudo: false
+
+# Operating System
+os : linux
+group: stable
+
+# Script Language
+language: php
+
+# Php Tests version
+php:
+  - 7.0
+  - 7.1
+
+
+# At Run Scripts
+# Tests
+# 1. Php CodeSniffer
+script:
+  - ./vendor/bin/phpcs
+
+# Matrix RULES
+matrix:
+  fast_finish: true
