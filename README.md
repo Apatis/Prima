@@ -120,3 +120,8 @@ $defaultConfiguration = [
 ## NOTE
 
 `Sorted middleware by default only available on service`
+
+
+## LICENSE
+
+[MIT LICENSE](LICENSE)
