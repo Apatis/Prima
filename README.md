@@ -2,6 +2,11 @@
 
 > The Slowest Performance Micro Framework
 
+## REQUIREMENT
+
+```
+Php 7.0 or later
+```
 
 ## USAGE
 
@@ -111,3 +116,7 @@ $defaultConfiguration = [
 ];
 
 ```
+
+## NOTE
+
+`Sorted middleware by default only available on service`

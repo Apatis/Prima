@@ -75,21 +75,29 @@ use Psr\Http\Message\ServerRequestInterface;
 class Service extends Middleware implements \ArrayAccess
 {
     /**
+     * Default chunk size to read stream
+     *
      * @type integer
      */
     const DEFAULT_CHUNK_SIZE = 4096;
 
     /**
+     * Object property container
+     *
      * @var ContainerInterface
      */
     private $container;
 
     /**
+     * Object property config
+     *
      * @var ConfigInterface
      */
     private $config;
 
     /**
+     * Object property router
+     *
      * @var RouterInterface
      */
     protected $router;
@@ -100,6 +108,8 @@ class Service extends Middleware implements \ArrayAccess
     protected $callbackResolver;
 
     /**
+     * Default configuration
+     *
      * @var array
      */
     protected $defaultConfiguration = [
@@ -164,6 +174,8 @@ class Service extends Middleware implements \ArrayAccess
     ];
 
     /**
+     * List of standard HTTP Request Methods
+     *
      * @var array
      */
     protected $standardHttpRequestMethods = [
@@ -237,9 +249,9 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
-     * Get chunk normalized size
+     * Get normalized chunk size from configuration
      *
-     * @return int
+     * @return int chunk size
      */
     public function getNormalizeResponseChunkSize() : int
     {
@@ -281,6 +293,9 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Set config object
+     * Behavior this will be override your current configuration
+     *
      * @param ConfigInterface $config
      */
     public function setConfig(ConfigInterface $config)
@@ -320,6 +335,8 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Get application configuration from ConfigInterface
+     *
      * @param string|int $name
      * @param mixed $default
      *
@@ -331,10 +348,12 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Set Configuration
+     *
      * @param string|int $name
      * @param mixed $value
      *
-     * @return mixed|void
+     * @return void
      */
     public function setConfiguration($name, $value)
     {
@@ -478,37 +497,26 @@ class Service extends Middleware implements \ArrayAccess
             );
         }
 
-        if ($this->getConfiguration('sortMiddleware') !== true) {
+        if ($this->middlewareSorted === true // prevent to re-reverse middleware
+            || count($this->middleware) < 2 // if middleware empty or only one
+            || $this->getConfiguration('sortMiddleware') !== true
+        ) {
             return parent::callMiddlewareStack($request, $response);
         }
 
-        // prevent to re-reverse middleware
-        // if middleware has been sorted and exists
-        if ($this->middlewareSorted === true && count($this->middleware) !== 0) {
-            parent::callMiddlewareStack($request, $response);
-        }
-
         $this->middlewareSorted = true;
-
-        // reverse middleware
-        $middlewareCopy = array_reverse($this->getMiddleware());
-        // check if first middleware is current object
-        $object = end($middlewareCopy);
-        if ($object instanceof MiddlewareStorage
-            && ($object = $object->getCallableMiddleware()) instanceof Service
-            && spl_object_hash($object) === spl_object_hash($this)
-        ) {
-            array_pop($middlewareCopy);
-        }
-
+        $middlewareCopy = $this->getMiddleware();
+        // remove current object middleware
+        array_shift($middlewareCopy);
         $this->middleware = [];
+
         /**
          * @var MiddlewareStorage $middleware
          */
-        foreach ($middlewareCopy as $key => $middleware) {
-            unset($middlewareCopy[$key]);
+        foreach (array_reverse($middlewareCopy) as $middleware) {
             $this->addMiddleware($middleware->getCallableMiddleware());
         }
+        unset($middlewareCopy, $middleware);
 
         $this->middlewareLocked = true;
         $response               = $this->currentStackMiddleware()->__invoke($request, $response);
