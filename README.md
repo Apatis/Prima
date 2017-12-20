@@ -56,6 +56,21 @@ $app->serve();
  */
 $defaultConfiguration = [
     /**
+     * clear the stored middleware after successfully called
+     * @var boolean
+     */
+    'clearMiddlewareAfterExecute' => true,
+    /**
+     * display details error
+     * @var boolean
+     */
+    'displayErrors'       => false,
+    /**
+     * Dispatch route first before Middleware called
+     * @var bool
+     */
+    'dispatchRouteBeforeMiddleware' => false,
+    /**
      * http version (HTTP/[httpVersion])
      * @var string
      */
@@ -67,10 +82,10 @@ $defaultConfiguration = [
      * @var boolean
      */
     'resolveCLIRequest'   => true,
-     /**
-      * fix http scheme if use behind proxy
-      * @var boolean
-      */
+    /**
+     * fix http scheme if use behind proxy
+     * @var boolean
+     */
     'fixProxy'            => true,
     /**
      * append content length into headers
@@ -79,12 +94,12 @@ $defaultConfiguration = [
     'setContentLength'    => false,
     /**
      * allow empty response code to be serve : code 204, 205, 304
-     * @var boolean 
+     * @var boolean
      */
     'serveEmptyResponse'  => false,
     /**
      * add buffer
-     * @var boolean 
+     * @var boolean
      */
     'useBuffer'           => true,
     /**
@@ -93,24 +108,14 @@ $defaultConfiguration = [
      */
     'responseChunkSize'   => 4096,
     /**
-     * display details error
-     * @var boolean
-     */
-    'displayErrors'       => false,
-    /**
      * Full path for route cache file
-     * @var string 
+     * @var string
      */
     'routerCacheFile'     => false,
     /**
-     * clear the stored middleware after successfully called
-     * @var boolean
-     */
-    'clearMiddlewareAfterExecute' => true,
-    /**
      * by default middleware called last set first, use `sortMiddleware` to re-arrange first
      * middleware to be called
-     * @var boolean 
+     * @var boolean
      */
     'sortMiddleware' => false,
 ];

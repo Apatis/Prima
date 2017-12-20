@@ -71,6 +71,8 @@ use Psr\Http\Message\ServerRequestInterface;
  * @method ResponseInterface connect(string $pattern, callable $callable);
  * @method ResponseInterface trace(string $pattern, callable $callable);
  * @method ResponseInterface options(string $pattern, callable $callable);
+ *
+ * @see __call()
  */
 class Service extends Middleware implements \ArrayAccess
 {
@@ -114,6 +116,21 @@ class Service extends Middleware implements \ArrayAccess
      */
     protected $defaultConfiguration = [
         /**
+         * clear the stored middleware after successfully called
+         * @var boolean
+         */
+        'clearMiddlewareAfterExecute' => true,
+        /**
+         * display details error
+         * @var boolean
+         */
+        'displayErrors'       => false,
+        /**
+         * Dispatch route first before Middleware called
+         * @var bool
+         */
+        'dispatchRouteBeforeMiddleware' => false,
+        /**
          * http version (HTTP/[httpVersion])
          * @var string
          */
@@ -151,20 +168,10 @@ class Service extends Middleware implements \ArrayAccess
          */
         'responseChunkSize'   => 4096,
         /**
-         * display details error
-         * @var boolean
-         */
-        'displayErrors'       => false,
-        /**
          * Full path for route cache file
          * @var string
          */
         'routerCacheFile'     => false,
-        /**
-         * clear the stored middleware after successfully called
-         * @var boolean
-         */
-        'clearMiddlewareAfterExecute' => true,
         /**
          * by default middleware called last set first, use `sortMiddleware` to re-arrange first
          * middleware to be called
@@ -536,6 +543,14 @@ class Service extends Middleware implements \ArrayAccess
      */
     public function process(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
     {
+        /**
+         * Dispatch Route before middleware called
+         */
+        if ($this->getConfiguration('dispatchRouteBeforeMiddleware') === true) {
+            $router = $this->getRouter();
+            $this->dispatchRouterRoute($request, $router);
+        }
+
         try {
             $response = $this->callMiddlewareStack($request, $response);
             // if configuration of : clearMiddlewareAfterExecute
@@ -765,7 +780,7 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
-     * Set Exception Handler
+     * Set Exception Handler, to handle error thrown exception
      *
      * @param ExceptionHandlerInterface $handler
      */
@@ -792,7 +807,7 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
-     * Set Error Handler
+     * Set Error Handler, to handle error thrown php error
      *
      * @param ErrorHandlerInterface $handler
      */
@@ -825,7 +840,7 @@ class Service extends Middleware implements \ArrayAccess
      * @param RouterInterface        $router
      * @return ServerRequestInterface
      */
-    protected function dispatchAndPrepareRoute(
+    protected function dispatchRouterRoute(
         ServerRequestInterface $request,
         RouterInterface $router
     ) : ServerRequestInterface {
@@ -838,7 +853,9 @@ class Service extends Middleware implements \ArrayAccess
 
             $route = $router->getRouteByIdentifier($routeInfo[1]);
             $route->prepare($request, $routeArguments);
-            // add route to the request's attributes in case a middleware or handler needs access to the route
+            /**
+             * Add route to request to allow handler or other access route
+             */
             $request = $request->withAttribute('route', $route);
         }
 
@@ -867,7 +884,7 @@ class Service extends Middleware implements \ArrayAccess
 
         // If router hasn't been dispatched or the URI changed then dispatch
         if (null === $routeInfo || ($routeInfo['request'] !== [$request->getMethod(), (string) $request->getUri()])) {
-            $request = $this->dispatchAndPrepareRoute($request, $router);
+            $request = $this->dispatchRouterRoute($request, $router);
             $routeInfo = $request->getAttribute('routeInfo');
         }
 
