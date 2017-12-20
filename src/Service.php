@@ -55,6 +55,7 @@ use FastRoute\Dispatcher;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Class Service
@@ -594,10 +595,11 @@ class Service extends Middleware implements \ArrayAccess
      * resultant Response object to the HTTP client.
      *
      * @param bool $serveToClient set true to doing display response to client
+     * @param StreamInterface $stream writable Stream to as Response
      *
      * @return ResponseInterface
      */
-    public function serve(bool $serveToClient = true) : ResponseInterface
+    public function serve(bool $serveToClient = true, StreamInterface $stream = null) : ResponseInterface
     {
         $globals = $this->getConfiguration('fixProxy', true)
             ? Uri::fixSchemeProxyFromGlobals($_SERVER)
@@ -611,7 +613,7 @@ class Service extends Middleware implements \ArrayAccess
         }
 
         // create response
-        $response = new Response(200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        $response = new Response(200, ['Content-Type' => 'text/html; charset=UTF-8'], $stream);
 
         /**
          * @var ResponseInterface $response
