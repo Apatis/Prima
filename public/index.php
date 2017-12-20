@@ -4,6 +4,7 @@
  */
 namespace {
 
+    use Apatis\Http\Message\Stream;
     use Apatis\Prima\Service;
     use Psr\Http\Message\ResponseInterface;
     use Psr\Http\Message\ServerRequestInterface;
@@ -18,6 +19,7 @@ namespace {
         $response->getBody()->write(
             json_encode(
                 [
+                    "RouteParams"         => $params,
                     "QueryString"    => $request->getQueryParams(),
                     "RouteInfo"      => $request->getAttribute('routeInfo')
                 ],
@@ -27,5 +29,7 @@ namespace {
         return $response->withHeader('Content-Type', 'application/json;charset=utf-8');
     });
 
-    $service->serve();
+    // custom stream to memory
+    $stream = new Stream(fopen('php://memory', 'r+'));
+    $service->serve(true, $stream);
 }
