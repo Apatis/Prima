@@ -595,12 +595,19 @@ class Service extends Middleware implements \ArrayAccess
      * resultant Response object to the HTTP client.
      *
      * @param bool $serveToClient set true to doing display response to client
-     * @param StreamInterface $stream writable Stream to as Response
+     * @param StreamInterface $stream writable Stream to as Response to make
+     *                                More advance usage.
      *
      * @return ResponseInterface
      */
     public function serve(bool $serveToClient = true, StreamInterface $stream = null) : ResponseInterface
     {
+        if ($stream && ! $stream->isWritable()) {
+            throw new \InvalidArgumentException(
+                'Stream must be writable'
+            );
+        }
+
         $globals = $this->getConfiguration('fixProxy', true)
             ? Uri::fixSchemeProxyFromGlobals($_SERVER)
             : $_SERVER;
