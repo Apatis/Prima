@@ -719,8 +719,13 @@ class Service extends Middleware implements \ArrayAccess
         } else {
             $handler = $this->getErrorHandler();
         }
-
         $response = $handler($request, $response, $e);
+
+        // check if buffer is zero and add the buffer
+        if (ob_get_level() === 0) {
+            $this->addCreateBuffer();
+        }
+
         return $response;
     }
 
@@ -890,14 +895,21 @@ class Service extends Middleware implements \ArrayAccess
 
         if ($routeInfo[0] === Dispatcher::FOUND) {
             $route = $router->getRouteByIdentifier($routeInfo[1]);
-            return $route->process($request, $response);
+            $response = $route->process($request, $response);
         } elseif ($routeInfo[0] === Dispatcher::METHOD_NOT_ALLOWED) {
             $notAllowedHandler = $this->getNotAllowedHandler();
-            return $notAllowedHandler($request, $response, $routeInfo[1]);
+            $response = $notAllowedHandler($request, $response, $routeInfo[1]);
+        } else {
+            $notFoundHandler = $this->getNotFoundHandler();
+            $response = $notFoundHandler($request, $response);
         }
 
-        $notFoundHandler = $this->getNotFoundHandler();
-        return $notFoundHandler($request, $response);
+        // check if buffer is zero and add the buffer
+        if (ob_get_level() === 0) {
+            $this->addCreateBuffer();
+        }
+
+        return $response;
     }
 
     /* ----------------------------------------------------
