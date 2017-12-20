@@ -544,15 +544,14 @@ class Service extends Middleware implements \ArrayAccess
      */
     public function process(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
     {
-        /**
-         * Dispatch Route before middleware called
-         */
-        if ($this->getConfiguration('dispatchRouteBeforeMiddleware') === true) {
-            $router = $this->getRouter();
-            $this->dispatchRouterRoute($request, $router);
-        }
-
         try {
+            /**
+             * Dispatch Route before middleware called
+             */
+            if ($this->getConfiguration('dispatchRouteBeforeMiddleware') === true) {
+                $router = $this->getRouter();
+                $this->dispatchRouterRoute($request, $router);
+            }
             $response = $this->callMiddlewareStack($request, $response);
             // if configuration of : clearMiddlewareAfterExecute
             // set into true , clear the middleware
@@ -602,12 +601,6 @@ class Service extends Middleware implements \ArrayAccess
      */
     public function serve(bool $serveToClient = true, StreamInterface $stream = null) : ResponseInterface
     {
-        if ($stream && ! $stream->isWritable()) {
-            throw new \InvalidArgumentException(
-                'Stream must be writable'
-            );
-        }
-
         $globals = $this->getConfiguration('fixProxy', true)
             ? Uri::fixSchemeProxyFromGlobals($_SERVER)
             : $_SERVER;
