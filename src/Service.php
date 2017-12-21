@@ -223,6 +223,11 @@ class Service extends Middleware implements \ArrayAccess
     private $middlewareSorted = false;
 
     /**
+     * @var int
+     */
+    protected $servedResponseCount = 0;
+
+    /**
      * Service constructor.
      *
      * @param array|ConfigInterface $config Service Configuration
@@ -641,12 +646,25 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Get Served Response Count
+     * @see Service::serveResponse()
+     *
+     * @return int
+     */
+    public function getServedResponseCount() : int
+    {
+        return $this->servedResponseCount;
+    }
+
+    /**
      * Send the response the client
      *
      * @param ResponseInterface $response
      */
     public function serveResponse(ResponseInterface $response)
     {
+        // add increment
+        $this->servedResponseCount++;
         $allowServeEmpty = $this->getConfiguration('serveEmptyResponse') === true;
         $setContentLength = $this->getConfiguration('setContentLength') === true;
         // Send response
