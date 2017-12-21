@@ -624,6 +624,8 @@ class Service extends Middleware implements \ArrayAccess
 
         // create response
         $response = new Response(200, ['Content-Type' => 'text/html; charset=UTF-8'], $stream);
+        // add service to request
+        $request = $request->withAttribute('service', $this);
 
         /**
          * @var ResponseInterface $response
