@@ -312,6 +312,8 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Get config object instance
+     *
      * @return ConfigInterface
      */
     public function getConfig() : ConfigInterface
@@ -335,6 +337,8 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Set route handler
+     *
      * @param RouterInterface $router
      */
     public function setRouter(RouterInterface $router)
@@ -369,6 +373,8 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Get router handler
+     *
      * @return RouterInterface
      */
     public function getRouter() : RouterInterface
@@ -496,6 +502,10 @@ class Service extends Middleware implements \ArrayAccess
      * if the @property $middlewareSorted has been set into true
      * then will be not sorted again,
      * and if sorted again it will be fallback like original process (called from last)
+     *
+     * @return ResponseInterface response after middleware successfully called
+     *
+     * @throws MiddlewareLockedException if middleware in process
      */
     public function callMiddlewareStack(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
