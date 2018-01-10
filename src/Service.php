@@ -2,7 +2,7 @@
 /**
  * MIT License
  *
- * Copyright (c) 2017  Pentagonal Development
+ * Copyright (c) 2017 - 2018 Pentagonal Development
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,6 +92,13 @@ class Service extends Middleware implements \ArrayAccess
     private $container;
 
     /**
+     * Shutdown Property Reader
+     *
+     * @var bool
+     */
+    private $haltShutDown = false;
+
+    /**
      * Object property config
      *
      * @var ConfigInterface
@@ -131,6 +138,11 @@ class Service extends Middleware implements \ArrayAccess
          * @var bool
          */
         'dispatchRouteBeforeMiddleware' => false,
+        /**
+         * Handle Shutdown
+         * @var bool
+         */
+        'handleShutdown'      => true,
         /**
          * http version (HTTP/[httpVersion])
          * @var string
@@ -247,17 +259,14 @@ class Service extends Middleware implements \ArrayAccess
             );
         }
 
+        // add set chunk size
+        $this->defaultConfiguration['responseChunkSize'] = static::DEFAULT_CHUNK_SIZE;
         if (!is_object($config)) {
             $config = new Config($config);
         }
 
-        // re-set configuration
-        $this->defaultConfiguration['responseChunkSize'] = static::DEFAULT_CHUNK_SIZE;
-        // use default config
-        $this->config = new Config($this->defaultConfiguration);
-        // merge the config
-        $this->config->merge($config);
-
+        // set config
+        $this->setConfig($config);
         $this->container = $container;
     }
 
@@ -313,6 +322,15 @@ class Service extends Middleware implements \ArrayAccess
      */
     public function setConfig(ConfigInterface $config)
     {
+        // get keys & flip
+        $configKeys = array_flip($config->keys());
+        // put default config
+        foreach ($this->defaultConfiguration as $key => $value) {
+            if (!isset($configKeys[$key])) {
+                $config->set($key, $value);
+            }
+        }
+
         $this->config = $config;
     }
 
@@ -548,6 +566,44 @@ class Service extends Middleware implements \ArrayAccess
     }
 
     /**
+     * Shutdown Handler callback to print Output Response
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     *
+     * @return callable
+     */
+    protected function shutdownHandlerCallback(
+        ServerRequestInterface $request,
+        ResponseInterface $response
+    ) : callable {
+        /**
+         * Shutdown Handler
+         */
+        return function () use($request, $response) {
+            if ($this->haltShutDown === true) {
+                return;
+            }
+            $lastError = error_get_last();
+            if (empty($lastError['type'])
+                // check if error type is valid error
+                || ! in_array($lastError['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR])
+            ) {
+                return;
+            }
+            // serve the end of response
+            $this->serveResponse(
+                $this->getErrorHandler()(
+                $request,
+                $response,
+                new \Error($lastError['message'], $lastError['type'])
+            ));
+            // exit with 255 code
+            exit(255);
+        };
+    }
+
+    /**
      * Process a request
      *
      * This method traverses the application middleware stack and then returns the
@@ -560,6 +616,14 @@ class Service extends Middleware implements \ArrayAccess
     public function process(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
     {
         try {
+            // disable halt shutdown
+            $this->haltShutDown = false;
+            // if shutdown configuration for `handleShutdown` is enable
+            // add handler, because on some error type, error only handle in shutdown
+            if ($this->getConfiguration('handleShutdown') === true) {
+                register_shutdown_function($this->shutdownHandlerCallback($request, $response));
+            }
+
             /**
              * Dispatch Route before middleware called
              */
@@ -567,6 +631,7 @@ class Service extends Middleware implements \ArrayAccess
                 $router = $this->getRouter();
                 $this->dispatchRouterRoute($request, $router);
             }
+
             $response = $this->callMiddlewareStack($request, $response);
             // if configuration of : clearMiddlewareAfterExecute
             // set into true , clear the middleware
@@ -579,7 +644,9 @@ class Service extends Middleware implements \ArrayAccess
             $response = $this->handleForResponseException($request, $response, $e);
         }
 
-        $response = $this->finalizeResponse($response);
+        // halt the shutdown to tell the shutdown handler no need to handle error
+        $this->haltShutDown = true;
+        $response           = $this->finalizeResponse($response);
         return $response;
     }
 
