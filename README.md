@@ -71,6 +71,11 @@ $defaultConfiguration = [
      */
     'dispatchRouteBeforeMiddleware' => false,
     /**
+     * Handle Shutdown
+     * @var bool
+     */
+    'handleShutdown'      => true,
+    /**
      * http version (HTTP/[httpVersion])
      * @var string
      */
