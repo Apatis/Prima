@@ -629,7 +629,8 @@ class Service extends Middleware implements \ArrayAccess
              */
             if ($this->getConfiguration('dispatchRouteBeforeMiddleware') === true) {
                 $router = $this->getRouter();
-                $this->dispatchRouterRoute($request, $router);
+                // override request from route dispatcher
+                $request = $this->dispatchRouterRoute($request, $router);
             }
 
             $response = $this->callMiddlewareStack($request, $response);
