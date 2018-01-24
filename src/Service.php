@@ -32,6 +32,9 @@ use Apatis\CallbackResolver\CallbackResolverInterface;
 use Apatis\Config\Config;
 use Apatis\Config\ConfigInterface;
 use Apatis\Container\Container;
+use Apatis\Exception\MethodNotAllowedException;
+use Apatis\Exception\NotFoundException;
+use Apatis\Exception\RequestResponseException;
 use Apatis\Handler\Response\ErrorHandler;
 use Apatis\Handler\Response\ErrorHandlerInterface;
 use Apatis\Handler\Response\ExceptionHandler;
@@ -575,6 +578,8 @@ class Service extends Middleware implements \ArrayAccess
                 $this->middlewareSorted = false;
                 $this->middleware = [];
             }
+        } catch (RequestResponseException $e) {
+            $response = $this->handleForResponseException($e->getRequest(), $e->getResponse(), $e);
         } catch (\Throwable $e) {
             $response = $this->handleForResponseException($request, $response, $e);
         }
@@ -746,11 +751,16 @@ class Service extends Middleware implements \ArrayAccess
         ResponseInterface $response,
         \Throwable $e
     ) : ResponseInterface {
-        if ($e instanceof \Exception) {
+        if ($e instanceof MethodNotAllowedException) {
+            $handler = $this->getNotAllowedHandler();
+        } elseif ($e instanceof NotFoundException) {
+            $handler = $this->getNotFoundHandler();
+        } elseif ($e instanceof \Exception) {
             $handler = $this->getExceptionHandler();
         } else {
             $handler = $this->getErrorHandler();
         }
+
         $response = $handler($request, $response, $e);
 
         // check if buffer is zero and add the buffer
