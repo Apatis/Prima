@@ -4,13 +4,14 @@
     "type": "project",
     "require": {
         "php": "^7.0",
-        "apatis/callback_resolver": "~1.0",
-        "apatis/config": "~1.0",
-        "apatis/container": "~1.0",
-        "apatis/handler-response": "~1.0",
-        "apatis/http-message": "~1.0",
-        "apatis/http-cookie": "~1.0",
-        "apatis/middleware": "~1.0",
+        "apatis/callback_resolver": "~1",
+        "apatis/config": "~1",
+        "apatis/container": "~1",
+        "apatis/exception": "~1",
+        "apatis/handler-response": "~1",
+        "apatis/http-message": "~1",
+        "apatis/http-cookie": "~1",
+        "apatis/middleware": "~1",
         "apatis/route": "~1.0"
     },
     "require-dev": {
