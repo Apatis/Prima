@@ -888,7 +888,9 @@ class Service extends Middleware implements \ArrayAccess
     public function getNotAllowedHandler() : NotAllowedHandlerInterface
     {
         if (!$this->notAllowedHandler) {
-            $this->notAllowedHandler = new NotAllowedHandler();
+            $this->notAllowedHandler = new NotAllowedHandler(
+                (bool) $this->getConfiguration('displayErrors')
+            );
         }
 
         return $this->notAllowedHandler;
