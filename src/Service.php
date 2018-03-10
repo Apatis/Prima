@@ -632,7 +632,8 @@ class Service extends Middleware implements \ArrayAccess
              */
             if ($this->getConfiguration('dispatchRouteBeforeMiddleware') === true) {
                 $router = $this->getRouter();
-                $this->dispatchRouterRoute($request, $router);
+                // override request from route dispatcher
+                $request = $this->dispatchRouterRoute($request, $router);
             }
 
             $response = $this->callMiddlewareStack($request, $response);
@@ -887,7 +888,9 @@ class Service extends Middleware implements \ArrayAccess
     public function getNotAllowedHandler() : NotAllowedHandlerInterface
     {
         if (!$this->notAllowedHandler) {
-            $this->notAllowedHandler = new NotAllowedHandler();
+            $this->notAllowedHandler = new NotAllowedHandler(
+                (bool) $this->getConfiguration('displayErrors')
+            );
         }
 
         return $this->notAllowedHandler;
